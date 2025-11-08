@@ -1351,15 +1351,15 @@ a { font-size: 1.125rem; line-height: 1.6; }
     width: 340px;
   }
 }.u-section-3 .u-sheet-1 {
-  min-height: 620px;
+  min-height: 597px;
 }
 
 .u-section-3 .u-text-1 {
   font-family: Mali;
-  font-size: 1.75rem;
+  font-size: 1.875rem;
   font-weight: 700;
   line-height: 2;
-  margin: 58px 0;
+  margin: 58px 0 0;
 }
 
 @media (max-width: 991px) {
@@ -1369,15 +1369,21 @@ a { font-size: 1.125rem; line-height: 1.6; }
 
   .u-section-3 .u-text-1 {
     width: auto;
+    --animation-custom_in-translate_x: 0px;
+    --animation-custom_in-translate_y: 0px;
+    --animation-custom_in-opacity: 0;
+    --animation-custom_in-rotate: 0deg;
+    --animation-custom_in-scale: 1;
     margin-top: 0;
     margin-bottom: 1px;
+    font-size: 1.125rem;
   }
 }
 
 @media (max-width: 767px) {
   .u-section-3 .u-text-1 {
     margin-top: 60px;
-    font-size: 1.5555555555555554rem;
+    font-size: 1rem;
   }
 }
 
@@ -1388,31 +1394,39 @@ a { font-size: 1.125rem; line-height: 1.6; }
 
   .u-section-3 .u-text-1 {
     font-size: 0.875rem;
-    --animation-custom_in-translate_x: 0px;
-    --animation-custom_in-translate_y: 0px;
-    --animation-custom_in-opacity: 0;
-    --animation-custom_in-rotate: 0deg;
-    --animation-custom_in-scale: 1;
     margin-top: 12px;
     margin-bottom: 12px;
   }
 }.u-section-4 .u-sheet-1 {
-  min-height: 232px;
+  min-height: 167px;
 }
 
 .u-section-4 .u-image-1 {
   width: 593px;
+  animation-timing-function: ease;
+  --animation-custom_in-translate_x: 0px;
+  --animation-custom_in-translate_y: 0px;
+  --animation-custom_in-opacity: 0;
+  --animation-custom_in-rotate: 0deg;
+  --animation-custom_in-scale: 0.5;
 }
 
 @media (max-width: 991px) {
+  .u-section-4 .u-sheet-1 {
+    min-height: 127px;
+  }
+
   .u-section-4 .u-image-1 {
     width: 392px;
   }
 }
 
 @media (max-width: 575px) {
+  .u-section-4 .u-sheet-1 {
+    min-height: 73px;
+  }
+
   .u-section-4 .u-image-1 {
-    animation-timing-function: ease;
     width: 250px;
   }
 }.u-section-5 .u-sheet-1 {
@@ -1461,6 +1475,7 @@ a { font-size: 1.125rem; line-height: 1.6; }
 
   .u-section-5 .u-text-1 {
     font-size: 0.875rem;
+    width: auto;
     margin-top: 1px;
     margin-bottom: 15px;
   }
