@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="keywords" content="">
     <meta name="description" content="">
-	
     <title>GOPREMIUM</title>
 	
 <style>
@@ -50,9 +49,9 @@
 <script>
 // ============ CONFIG ============ //
 const CONFIG = {
-  flakesCountFactor: 0.0008, // ความหนาแน่น (ยิ่งมากยิ่งหนาแน่น)
-  gravity: 0.02,             // ความเร็วตก
-  windVariation: 0.08,       // ความผันผวนของลม
+  flakesCountFactor: 0.0008,
+  gravity: 0.02,
+  windVariation: 0.08,
   maxSpeedY: 2.0,
   images: [
     "images/snowflake1.png",
@@ -61,15 +60,22 @@ const CONFIG = {
   ],
   minSize: 3,
   maxSize: 16,
-  fadeDistance: 0.7 // สัดส่วนความสูงที่เริ่มจาง (0 = ทันที, 1 = จางตอนใกล้พื้น)
+  fadeDistance: 0.7,
+  retryDelay: 2000 // หน่วงเวลาโหลดซ้ำ 2 วินาที
 };
 
 // ============ SCRIPT ============ //
 const canvas = document.getElementById("snow-canvas");
 const ctx = canvas.getContext("2d", { alpha: true });
 
-// ✅ ปรับความคมชัดตามความละเอียดจอ (Retina / HiDPI)
 let W, H, dpr;
+let flakes = [];
+let snowImages = [];
+let imagesLoaded = 0;
+let lastTime = performance.now();
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+
 function resize() {
   dpr = window.devicePixelRatio || 1;
   W = innerWidth;
@@ -85,12 +91,6 @@ function resize() {
   if (flakes.length > targetCount) flakes.length = targetCount;
 }
 window.addEventListener("resize", () => setTimeout(resize, 150));
-
-let flakes = [];
-let snowImages = [];
-let imagesLoaded = 0;
-
-function rand(min, max) { return Math.random() * (max - min) + min; }
 
 function makeFlake() {
   const img = snowImages[Math.floor(Math.random() * snowImages.length)];
@@ -109,33 +109,38 @@ function makeFlake() {
 
 function drawFlake(f) {
   ctx.save();
-
-  // 🌫️ คำนวณความจางของหิมะตามตำแหน่งแนวตั้ง
   const fadeStart = H * CONFIG.fadeDistance;
   let fadeFactor = 1;
   if (f.y > fadeStart) {
     const progress = (f.y - fadeStart) / (H - fadeStart);
-    fadeFactor = Math.max(1 - progress, 0); // ค่อย ๆ จางลงจนหาย
+    fadeFactor = Math.max(1 - progress, 0);
   }
-
-  ctx.globalAlpha = f.alpha * fadeFactor; // รวมค่าโปร่งใสพื้นฐาน + fade out
+  ctx.globalAlpha = f.alpha * fadeFactor;
   ctx.translate(f.x, f.y);
   ctx.rotate(f.rot);
-  ctx.drawImage(f.img, -f.size / 2, -f.size / 2, f.size, f.size);
+
+  // ถ้าไม่มีภาพ ใช้วงกลมขาวแทน
+  if (f.img && f.img.complete) {
+    ctx.drawImage(f.img, -f.size / 2, -f.size / 2, f.size, f.size);
+  } else {
+    ctx.beginPath();
+    ctx.arc(0, 0, f.size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+  }
+
   ctx.restore();
 }
 
 let wind = 0;
 let windTarget = 0;
 let windTimer = 0;
-let lastTime = performance.now();
 
 function animate(now) {
   const dt = now - lastTime;
   lastTime = now;
   ctx.clearRect(0, 0, W, H);
 
-  // 🌬️ ลมเปลี่ยนทิศทางสุ่มทุก 1.5 วินาที
   windTimer += dt;
   if (windTimer > 1500) {
     windTimer = 0;
@@ -143,19 +148,15 @@ function animate(now) {
   }
   wind += (windTarget - wind) * 0.02;
 
-  // ❄️ เคลื่อนที่ของเกล็ดหิมะ
   for (let f of flakes) {
     f.y += f.speedY;
     f.x += wind * f.size * 0.5;
     f.rot += f.rotSpeed;
-
-    // ถ้าหิมะตกพ้นขอบจอ ให้กลับไปข้างบนใหม่
     if (f.y > H + f.size) {
       f.y = -f.size;
       f.x = rand(0, W);
       f.speedY = rand(0.4, CONFIG.maxSpeedY);
     }
-
     drawFlake(f);
   }
 
@@ -167,17 +168,34 @@ function start() {
   requestAnimationFrame(animate);
 }
 
-// โหลดภาพทั้งหมดก่อนเริ่ม
-CONFIG.images.forEach(url => {
-  const img = new Image();
-  img.src = url;
-  img.onload = () => {
-    snowImages.push(img);
-    imagesLoaded++;
-    if (imagesLoaded === CONFIG.images.length) start();
-  };
-});
-</script>	
+// โหลดภาพพร้อมระบบ retry ซ้ำจนกว่าจะสำเร็จ
+function loadImagesWithRetry() {
+  snowImages = [];
+  imagesLoaded = 0;
+  console.log("🎞️ เริ่มโหลดภาพหิมะใหม่...");
+
+  CONFIG.images.forEach((url, index) => {
+    const img = new Image();
+    img.src = url + "?t=" + Date.now(); // กัน cache
+    img.onload = () => {
+      snowImages[index] = img;
+      imagesLoaded++;
+      console.log(`✅ โหลดสำเร็จ: ${url}`);
+      if (imagesLoaded === CONFIG.images.length) {
+        console.log("🌨️ โหลดครบทุกภาพ เริ่มแสดงผล!");
+        start();
+      }
+    };
+    img.onerror = () => {
+      console.warn(`⚠️ โหลดไม่สำเร็จ: ${url}, จะลองใหม่อีกครั้ง...`);
+      setTimeout(loadImagesWithRetry, CONFIG.retryDelay);
+    };
+  });
+}
+
+loadImagesWithRetry();
+</script>
+	
 	
     <link rel="stylesheet" href="nicepage.css" media="screen">
 <link rel="stylesheet" href="index.css" media="screen">
