@@ -113,4 +113,62 @@
     margin-left: auto;
     margin-bottom: 10px;
   }
+
+  .neon-wrapper {
+  position: relative;
+  display: inline-block;
+  padding: 5px;
+  border-radius: 14px;
+  text-decoration: none;
+}
+
+.neon-png {
+  width: 200px; /* ปรับตามขนาดปุ่มจริง */
+  display: block;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.neon-png:hover {
+  transform: scale(1.05);
+}
+
+/* 🔥 เอฟเฟกต์ไฟนีออนหมุนรอบปุ่ม */
+.neon-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 3px;
+  background: conic-gradient(
+    from 0deg,
+    #00ffff,
+    #00ff99,
+    #00ffff,
+    #00ff99,
+    #00ffff
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: spin 4s linear infinite;
+  z-index: 1;
+  pointer-events: none; /* ไม่บังการคลิก */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ✨ เอฟเฟกต์เมื่อ hover เพิ่มความสว่าง */
+.neon-wrapper:hover::before {
+  filter: brightness(1.5);
+}
+
 }
