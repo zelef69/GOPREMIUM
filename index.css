@@ -114,61 +114,74 @@
     margin-bottom: 10px;
   }
 
-  .neon-wrapper {
+  /* ===== ปุ่ม PNG พร้อมไฟนีออนวิ่งรอบ ๆ ===== */
+.neon-wrapper {
   position: relative;
   display: inline-block;
   padding: 5px;
-  border-radius: 14px;
+  border-radius: 16px;
   text-decoration: none;
+  overflow: hidden;
+  transition: 0.3s;
 }
 
 .neon-png {
   width: 200px; /* ปรับตามขนาดปุ่มจริง */
   display: block;
   border-radius: 12px;
-  transition: transform 0.3s ease;
   position: relative;
   z-index: 2;
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
 .neon-png:hover {
   transform: scale(1.05);
 }
 
-/* 🔥 เอฟเฟกต์ไฟนีออนหมุนรอบปุ่ม */
+/* 🔥 เอฟเฟกต์ไฟนีออน "วิ่งวน" รอบปุ่ม */
 .neon-wrapper::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  padding: 3px;
-  background: conic-gradient(
-    from 0deg,
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 18px;
+  background: linear-gradient(
+    90deg,
     #00ffff,
     #00ff99,
     #00ffff,
     #00ff99,
     #00ffff
   );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  animation: spin 4s linear infinite;
+  background-size: 300% 300%;
+  animation: neonFlow 3s linear infinite;
+  filter: brightness(1.2) blur(1px);
   z-index: 1;
-  pointer-events: none; /* ไม่บังการคลิก */
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* วงใน (ปิดทับตรงกลางให้เหลือแค่ขอบไฟ) */
+.neon-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #000; /* สีพื้นหลังด้านใน (เปลี่ยนได้ตามธีมเว็บ) */
+  border-radius: 14px;
+  z-index: 1;
 }
 
-/* ✨ เอฟเฟกต์เมื่อ hover เพิ่มความสว่าง */
+/* ✨ แอนิเมชันไฟนีออน "วิ่งวน" */
+@keyframes neonFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Hover เพิ่มแสง */
 .neon-wrapper:hover::before {
-  filter: brightness(1.5);
+  filter: brightness(1.8) blur(2px);
 }
+
 
 }
