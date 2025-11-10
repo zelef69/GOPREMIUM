@@ -86,7 +86,9 @@
 .u-section-4 .u-image-1 {
   width: 495px;
   height: 142px;
-  margin: 9px auto 60px 305px;
+  box-shadow: 2px 0 0 0 rgba(255,0,0,0.02);
+  transform: rotate(0deg) scale(1) translateX(0px) translateY(0px);
+  margin: 9px auto 0 305px;
 }
 
 @media (max-width: 991px) {
@@ -103,85 +105,13 @@
 
 @media (max-width: 575px) {
   .u-section-4 .u-sheet-1 {
-    min-height: 98px;
+    min-height: 99px;
   }
 
   .u-section-4 .u-image-1 {
-    height: 78px;
-    width: 269px;
-    margin-top: 10px;
-    margin-left: auto;
-    margin-bottom: 10px;
+    height: 99px;
+    width: 342px;
+    filter: none;
+    margin: 1px -1px;
   }
-
-  /* ===== ปุ่ม PNG พร้อมไฟนีออนวิ่งรอบ ๆ ===== */
-.neon-wrapper {
-  position: relative;
-  display: inline-block;
-  padding: 5px;
-  border-radius: 16px;
-  text-decoration: none;
-  overflow: hidden;
-  transition: 0.3s;
-}
-
-.neon-png {
-  width: 200px; /* ปรับตามขนาดปุ่มจริง */
-  display: block;
-  border-radius: 12px;
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.neon-png:hover {
-  transform: scale(1.05);
-}
-
-/* 🔥 เอฟเฟกต์ไฟนีออน "วิ่งวน" รอบปุ่ม */
-.neon-wrapper::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 18px;
-  background: linear-gradient(
-    90deg,
-    #00ffff,
-    #00ff99,
-    #00ffff,
-    #00ff99,
-    #00ffff
-  );
-  background-size: 300% 300%;
-  animation: neonFlow 3s linear infinite;
-  filter: brightness(1.2) blur(1px);
-  z-index: 1;
-}
-
-/* วงใน (ปิดทับตรงกลางให้เหลือแค่ขอบไฟ) */
-.neon-wrapper::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  background: #000; /* สีพื้นหลังด้านใน (เปลี่ยนได้ตามธีมเว็บ) */
-  border-radius: 14px;
-  z-index: 1;
-}
-
-/* ✨ แอนิเมชันไฟนีออน "วิ่งวน" */
-@keyframes neonFlow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
-}
-
-/* Hover เพิ่มแสง */
-.neon-wrapper:hover::before {
-  filter: brightness(1.8) blur(2px);
-}
-
-
 }
