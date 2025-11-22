@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="สมัครยูทูปพรีเมี่ยม,gopremium">
+    <meta name="description" content="ยกระดับประสบการณ์ความบันเทิงของคุณ
+รับชมวิดีโอแบบไม่มีโฆษณาคั่น เพลิดเพลินกับการรับชมอย่างต่อเนื่อง ไม่สะดุด ไม่มีโฆษณารบกวน
+รับชมได้ทั้งออนไลน์และออฟไลน์ ไม่ต้องกังวลเรื่องเน็ตหมด – โหลดเก็บไว้ดูภายหลังได้ง่าย ๆ
+เสียงและภาพคุณภาพสูง ทั้งคมชัดและชัดเจน ให้คุณเต็มอิ่มกับทุกคอนเทนต์
+เลื่อนดู-ค้นหาส่วนที่ต้องการได้อย่างรวดเร็ว ฟีเจอร์เลื่อนไปยังช่วงโปรดของวิดีโอได้ทันใจ ไม่ต้องรอโหลด
+ปุ่มควบคุมอัจฉริยะเพื่อความสะดวก เล่นต่ออัตโนมัติ หรือข้ามไปยังคลิปถัดไปได้ง่ายดาย
+การแจ้งเตือนเมื่อมีคอนเทนต์ใหม่ ไม่พลาดการอัปโหลดใหม่ ๆ ที่คุณสนใจ
+ฟังก์ชันซูม/ขยายวิดีโอ ดูรายละเอียดชัดเจนมากขึ้นได้ตามต้องการ
+ใช้งานได้กับอุปกรณ์หลากหลาย รองรับสมาร์ทโฟน แท็บเล็ต คอมพิวเตอร์ ทีวี และอีกมากมาย">
+    <title>GOPREMIUM</title>
+
+<style>
+  html,body{
+    height:100%;
+    margin:0;
+    background: linear-gradient(#0b1726, #102a45 70%);
+    color:#fff;
+    font-family: Inter, sans-serif;
+  }
+
+  /* Canvas เป็นพื้นหลัง */
+  #snow-canvas{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .content{
+    position:relative;
+    z-index:1;
+    text-align:center;
+    padding-top:20vh;
+  }
+
+  h1{
+    font-size:2.2rem;
+    letter-spacing:1px;
+  }
+  p{
+    color:#dbeaf8;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #snow-canvas{ display:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="snow-canvas"></canvas>
+
+<div class="content">
+  <h1>❄️ Snowflakes Falling Effect ❄️</h1>
+  <p>หิมะตกสวยงามด้วยภาพเกล็ดหิมะหลายแบบ</p>
+</div>
+
+<script>
+// ============ CONFIG ============ //
+const CONFIG = {
+  flakesCountFactor: 0.0008, // ความหนาแน่น (ยิ่งมากยิ่งหนาแน่น)
+  gravity: 0.02,             // ความเร็วตก
+  windVariation: 0.08,       // ความผันผวนของลม
+  maxSpeedY: 2.0,
+  images: [
+    "https://raw.githubusercontent.com/zelef69/assetcdn/main/snowflake1.png",
+    "https://raw.githubusercontent.com/zelef69/assetcdn/main/snowflake2.png",
+    "https://raw.githubusercontent.com/zelef69/assetcdn/main/snowflake3.png",
+    "https://raw.githubusercontent.com/zelef69/assetcdn/main/snowflake4.png",
+  ], // ลิงก์ภาพเกล็ดหิมะ PNG โปร่งใส (ใช้ของคุณเองได้)
+  minSize: 12,
+  maxSize: 48,
+};
+
+// ============ SCRIPT ============ //
+const canvas = document.getElementById("snow-canvas");
+const ctx = canvas.getContext("2d");
+let W = innerWidth;
+let H = innerHeight;
+canvas.width = W;
+canvas.height = H;
+
+let flakes = [];
+let imagesLoaded = 0;
+let snowImages = [];
+
+function resize(){
+  W = innerWidth;
+  H = innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+  const targetCount = Math.round(W * H * CONFIG.flakesCountFactor);
+  while (flakes.length < targetCount) flakes.push(makeFlake());
+  if (flakes.length > targetCount) flakes.length = targetCount;
+}
+
+window.addEventListener("resize", ()=> setTimeout(resize, 150));
+
+function rand(min,max){ return Math.random() * (max-min) + min; }
+
+function makeFlake(){
+  const img = snowImages[Math.floor(Math.random()*snowImages.length)];
+  const size = rand(CONFIG.minSize, CONFIG.maxSize);
+  return {
+    x: rand(0, W),
+    y: rand(-H, H),
+    size,
+    speedY: rand(0.4, CONFIG.maxSpeedY),
+    rot: rand(0, Math.PI*2),
+    rotSpeed: rand(-0.01, 0.01),
+    img,
+    alpha: rand(0.4, 1),
+  };
+}
+
+function drawFlake(f){
+  ctx.save();
+  ctx.globalAlpha = f.alpha;
+  ctx.translate(f.x, f.y);
+  ctx.rotate(f.rot);
+  ctx.drawImage(f.img, -f.size/2, -f.size/2, f.size, f.size);
+  ctx.restore();
+}
+
+let wind = 0;
+let windTarget = 0;
+let windTimer = 0;
+let lastTime = performance.now();
+
+function animate(now){
+  const dt = now - lastTime;
+  lastTime = now;
+  ctx.clearRect(0,0,W,H);
+
+  // ปรับลมแบบสุ่ม
+  windTimer += dt;
+  if (windTimer > 1500){
+    windTimer = 0;
+    windTarget = rand(-CONFIG.windVariation, CONFIG.windVariation);
+  }
+  wind += (windTarget - wind) * 0.02;
+
+  for (let f of flakes){
+    f.y += f.speedY;
+    f.x += wind * f.size * 0.5; // ขนาดใหญ่รับลมแรงกว่า
+    f.rot += f.rotSpeed;
+
+    if (f.y > H + f.size){
+      f.y = -f.size;
+      f.x = rand(0, W);
+      f.speedY = rand(0.4, CONFIG.maxSpeedY);
+    }
+    drawFlake(f);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function start(){
+  resize();
+  requestAnimationFrame(animate);
+}
+
+// โหลดภาพทั้งหมดก่อนเริ่ม
+CONFIG.images.forEach(url=>{
+  const img = new Image();
+  img.src = url;
+  img.onload = ()=>{
+    snowImages.push(img);
+    imagesLoaded++;
+    if (imagesLoaded === CONFIG.images.length) start();
+  };
+});
+</script>
+	
+<link rel="stylesheet" href="index.css" media="screen">
+    <script class="u-script" type="text/javascript" src="jquery.js" defer=""></script>
+    <script class="u-script" type="text/javascript" src="nicepage.js" defer=""></script>
+    <meta name="generator" content="Nicepage 7.15.4, nicepage.com">
+    
+    
+    
+    
+    
+    
+    
+    <link id="u-page-google-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Roboto:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&amp;family=Honk:wght@400&amp;family=Mali:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&amp;family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900">
+    <script type="application/ld+json">{
+		"@context": "http://schema.org",
+		"@type": "Organization",
+		"name": "gopremium"
+}</script>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="GOPREMIUM">
+    <meta property="og:description" content="ยกระดับประสบการณ์ความบันเทิงของคุณ
+รับชมวิดีโอแบบไม่มีโฆษณาคั่น เพลิดเพลินกับการรับชมอย่างต่อเนื่อง ไม่สะดุด ไม่มีโฆษณารบกวน
+รับชมได้ทั้งออนไลน์และออฟไลน์ ไม่ต้องกังวลเรื่องเน็ตหมด – โหลดเก็บไว้ดูภายหลังได้ง่าย ๆ
+เสียงและภาพคุณภาพสูง ทั้งคมชัดและชัดเจน ให้คุณเต็มอิ่มกับทุกคอนเทนต์
+เลื่อนดู-ค้นหาส่วนที่ต้องการได้อย่างรวดเร็ว ฟีเจอร์เลื่อนไปยังช่วงโปรดของวิดีโอได้ทันใจ ไม่ต้องรอโหลด
+ปุ่มควบคุมอัจฉริยะเพื่อความสะดวก เล่นต่ออัตโนมัติ หรือข้ามไปยังคลิปถัดไปได้ง่ายดาย
+การแจ้งเตือนเมื่อมีคอนเทนต์ใหม่ ไม่พลาดการอัปโหลดใหม่ ๆ ที่คุณสนใจ
+ฟังก์ชันซูม/ขยายวิดีโอ ดูรายละเอียดชัดเจนมากขึ้นได้ตามต้องการ
+ใช้งานได้กับอุปกรณ์หลากหลาย รองรับสมาร์ทโฟน แท็บเล็ต คอมพิวเตอร์ ทีวี และอีกมากมาย">
+    <meta property="og:type" content="website">
+  <meta data-intl-tel-input-cdn-path="intlTelInput/"></head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GT-K5224NZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'GT-K5224NZD');
+</script>
+	
+  <body data-home-page="GOPREMIUM.html" data-home-page-title="GOPREMIUM" data-path-to-root="./" data-include-products="false" class="u-body u-clearfix u-xl-mode" data-lang="en"><header class="u-black u-clearfix u-header u-header" id="header"><div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
+        <p class="u-custom-font u-font-lato u-text u-text-default u-text-1" data-animation-name="customAnimationIn" data-animation-duration="2000" data-animation-delay="0">GO PREMIUM</p>
+      </div></header>
+    <section class="u-clearfix u-section-1" id="block-1">
+      <div class="u-clearfix u-sheet u-valign-middle-lg u-valign-middle-md u-valign-middle-sm u-valign-middle-xs u-sheet-1">
+        <h2 class="u-align-center u-custom-font u-text u-text-custom-color-1 u-text-1" data-animation-name="customAnimationIn" data-animation-duration="2000" data-animation-delay="0">GOPREMI​​UM </h2>
+      </div>
+    </section>
+    <section class="u-clearfix u-section-2" id="block-2">
+      <div class="u-clearfix u-sheet u-valign-middle-xl u-valign-middle-xs u-valign-top-lg u-valign-top-md u-valign-top-sm u-sheet-1">
+        <div class="custom-expanded u-video u-video-contain u-video-1" data-animation-name="customAnimationIn" data-animation-duration="3000" data-animation-delay="0" data-animation-out="0">
+          <div class="embed-responsive embed-responsive-1">
+            <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;" class="embed-responsive-item lazyload" frameborder="0" allowfullscreen="" data-src="https://www.youtube.com/embed/B5QLQYy3P2M?mute=0&amp;showinfo=0&amp;controls=0&amp;start=0" loading="lazy"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="u-clearfix u-section-3" id="block-3">
+      <div class="u-clearfix u-sheet u-valign-middle-lg u-valign-middle-sm u-valign-middle-xs u-sheet-1">
+        <p class="u-align-center u-custom-font u-text u-text-1" data-animation-name="customAnimationIn" data-animation-duration="5000" data-animation-delay="0" data-animation-out="1">✅เริ่มต้นเพียง&nbsp;&nbsp;19&nbsp;บาทเท่านั้น ..!!<br>✅ รับชมวิดีโอแบบไม่มีโฆษณาคั่น<br>✅&nbsp;ใช้เมลของตัวเองสมัครได้เลย<br>✅ต่ออายุ<span style="font-weight: 400;"></span>เมลเดิมได้<br>✅สามารถเข้าใช้ได้กับทุกอุปกรณ์ IOS และ Android หรือ เปิดบนเว็บไซต์<br>
+          <br>สมัคร หรือ สอบถามข้อมูลเพิ่มเติม กดปุ่ม<br>แอดไลน์ด้านล่างได้เลย<br>👇👇👇
+        </p>
+      </div>
+    </section>
+    <section class="u-clearfix u-container-align-center u-section-4" id="block-4">
+      <div class="u-clearfix u-sheet u-valign-middle-md u-valign-middle-xs u-sheet-1">
+        <img class="infinite u-absolute-hcenter u-expanded-height u-image u-image-contain u-image-default u-preserve-proportions lazyload u-image-1" alt="" data-image-width="726" data-image-height="200" data-animation-name="customAnimationIn" data-animation-duration="2000" data-animation-delay="0" data-animation-direction="" data-href="https://line.me/R/ti/p/%40615yysio" data-src="images/d4322e92-223e-3768-cf00-bc6e5fb22222.png" loading="lazy">
+      </div>
+    </section>
+    <section class="u-clearfix u-section-5" id="block-5">
+      <div class="u-clearfix u-sheet u-sheet-1">
+        <p class="u-align-center u-custom-font u-text u-text-1" data-animation-name="customAnimationIn" data-animation-duration="5000" data-animation-delay="0" data-animation-out="1"> ✨ ยกระดับประสบการณ์ความบันเทิงของคุณ<br>
+          <br>✅ รับชมวิดีโอแบบไม่มีโฆษณาคั่น<br>เพลิดเพลินกับการรับชมอย่างต่อเนื่อง ไม่สะดุด ไม่มีโฆษณารบกวน<br>
+          <br>✅ รับชมได้ทั้งออนไลน์และออฟไลน์<br>ไม่ต้องกังวลเรื่องเน็ตหมด – โหลดเก็บไว้ดูภายหลังได้ง่าย ๆ<br>
+          <br>✅ เสียงและภาพคุณภาพสูง<br>ทั้งคมชัดและชัดเจน ให้คุณเต็มอิ่มกับทุกคอนเทนต์<br>
+          <br>✅ เลื่อนดู-ค้นหาส่วนที่ต้องการได้อย่างรวดเร็ว<br>ฟีเจอร์เลื่อนไปยังช่วงโปรดของวิดีโอได้ทันใจ ไม่ต้องรอโหลด<br>
+          <br>✅ ปุ่มควบคุมอัจฉริยะเพื่อความสะดวก<br>เล่นต่ออัตโนมัติ หรือข้ามไปยังคลิปถัดไปได้ง่ายดาย<br>
+          <br>✅ การแจ้งเตือนเมื่อมีคอนเทนต์ใหม่<br>ไม่พลาดการอัปโหลดใหม่ ๆ ที่คุณสนใจ<br>
+          <br>✅ ฟังก์ชันซูม/ขยายวิดีโอ<br>ดูรายละเอียดชัดเจนมากขึ้นได้ตามต้องการ<br>
+          <br>✅ ใช้งานได้กับอุปกรณ์หลากหลาย<br>รองรับสมาร์ทโฟน แท็บเล็ต คอมพิวเตอร์ ทีวี และอีกมากมาย
+        </p>
+      </div>
+    </section>
+    
+    
+    
+    
+    <section class="u-backlink u-clearfix u-grey-80"> This <a href="https://nicepage.com/html5-template">HTML5 Template</a> was created with Nicepage Website Builder 
+    </section>
+  
+</body></html>
